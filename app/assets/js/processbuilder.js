@@ -691,11 +691,14 @@ class ProcessBuilder {
         const servLibs = this._resolveServerLibraries(mods)
 
         // Fabric: add profile libraries from loader data (asm, intermediary, sponge-mixin, etc.)
-        // Use version-independent Maven id as key so Fabric's libs override Mojang's (avoids duplicate ASM on classpath).
+        // Use version-independent Maven id as key and remove same from Mojang to avoid duplicate ASM on classpath.
         if (this.forgeData && this.forgeData.loaderType === 'fabric' && this.forgeData.libraries && this.forgeData.libraries.length) {
             this.forgeData.libraries.forEach((libPath) => {
                 const key = this._mavenVersionlessIdFromPath(libPath)
-                if (key) servLibs[key] = libPath
+                if (key) {
+                    servLibs[key] = libPath
+                    delete mojangLibs[key]
+                }
             })
         }
 
