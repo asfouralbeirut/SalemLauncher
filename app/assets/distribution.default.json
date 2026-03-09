@@ -1,0 +1,18 @@
+{
+    "version": "1",
+    "rss": "https://craftofsalem.com/feed",
+    "servers": [
+        {
+            "id": "craftofsalem",
+            "name": "Craft Of Salem",
+            "description": "Craft Of Salem sunucusu",
+            "icon": "https://craftofsalem.com/favicon.ico",
+            "version": "1",
+            "address": "oyna.craftofsalem.com",
+            "minecraftVersion": "1.21.11",
+            "mainServer": true,
+            "autoconnect": true,
+            "modules": []
+        }
+    ]
+}

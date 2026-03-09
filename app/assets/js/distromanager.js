@@ -557,16 +557,32 @@ exports.pullRemote = function(){
         }
         const distroDest = path.join(ConfigManager.getLauncherDirectory(), 'distribution.json')
         request(opts, (error, resp, body) => {
-            if(!error){
-                
-                try {
-                    data = DistroIndex.fromJSON(JSON.parse(body))
-                } catch (e) {
-                    reject(e)
-                    return
-                }
+            if (error) {
+                reject(error)
+                return
+            }
+            if (resp && resp.statusCode !== 200) {
+                reject(new Error('Distribution index HTTP ' + (resp ? resp.statusCode : 'no response')))
+                return
+            }
+            if (typeof body !== 'string' || body.trim().length === 0) {
+                reject(new Error('Distribution index empty response'))
+                return
+            }
+            // BOM veya baştaki boşlukları temizle; HTML yanıtı ise hata ver
+            body = body.replace(/^\uFEFF/, '').trim()
+            if (body.charAt(0) === '<') {
+                reject(new Error('Distribution index returned HTML instead of JSON'))
+                return
+            }
+            try {
+                data = DistroIndex.fromJSON(JSON.parse(body))
+            } catch (e) {
+                reject(e)
+                return
+            }
 
-                fs.writeFile(distroDest, body, 'utf-8', (err) => {
+            fs.writeFile(distroDest, body, 'utf-8', (err) => {
                     if(!err){
                         resolve(data)
                         return
@@ -575,10 +591,6 @@ exports.pullRemote = function(){
                         return
                     }
                 })
-            } else {
-                reject(error)
-                return
-            }
         })
     })
 }
@@ -588,15 +600,40 @@ exports.pullRemote = function(){
  */
 exports.pullLocal = function(){
     return new Promise((resolve, reject) => {
-        fs.readFile(DEV_MODE ? DEV_PATH : DISTRO_PATH, 'utf-8', (err, d) => {
-            if(!err){
-                data = DistroIndex.fromJSON(JSON.parse(d))
-                resolve(data)
-                return
-            } else {
-                reject(err)
+        const filePath = DEV_MODE ? DEV_PATH : DISTRO_PATH
+        fs.readFile(filePath, 'utf-8', (err, d) => {
+            if (!err) {
+                try {
+                    const cleaned = (d && typeof d === 'string') ? d.replace(/^\uFEFF/, '').trim() : d
+                    data = DistroIndex.fromJSON(JSON.parse(cleaned))
+                    resolve(data)
+                } catch (parseErr) {
+                    reject(parseErr)
+                }
                 return
             }
+            // Yerel dosya yoksa projede gömülü varsayılan dağıtımı kullan
+            if (err.code === 'ENOENT' && !DEV_MODE) {
+                const defaultPath = path.join(__dirname, '..', 'distribution.default.json')
+                fs.readFile(defaultPath, 'utf-8', (err2, defaultBody) => {
+                    if (!err2 && defaultBody) {
+                        try {
+                            data = DistroIndex.fromJSON(JSON.parse(defaultBody.replace(/^\uFEFF/, '').trim()))
+                            try {
+                                fs.mkdirSync(path.dirname(DISTRO_PATH), { recursive: true })
+                                fs.writeFileSync(DISTRO_PATH, defaultBody, 'utf-8')
+                            } catch (writeErr) {}
+                            resolve(data)
+                        } catch (e) {
+                            reject(e)
+                        }
+                    } else {
+                        reject(err)
+                    }
+                })
+                return
+            }
+            reject(err)
         })
     })
 }
