@@ -1,6 +1,16 @@
 {
     "html": {
-        "avatarOverlay": "Düzenle"
+        "avatarOverlay": "Düzenle",
+        "loginCancelText": "İptal",
+        "welcomeButtonText": "DEVAM",
+        "serverSelectHeader": "Mevcut Sunucular",
+        "serverSelectConfirm": "Seç",
+        "serverSelectCancel": "İptal",
+        "accountSelectHeader": "Hesap Seç",
+        "accountSelectConfirm": "Seç",
+        "accountSelectCancel": "İptal",
+        "overlayDismiss": "Kapat",
+        "loginOptionCancelButton": "İptal"
     },
     "js": {
         "login": {
@@ -36,14 +46,31 @@
                 }
             },
             "login": "GİRİŞ",
-            "loggingIn": "GİRİŞ YAPILIYOR",
-            "success": "BAŞARILI",
+            "loginButton": "GİRİŞ YAP",
+            "loggingIn": "Giriş yapılıyor...",
+            "success": "Başarılı",
             "tryAgain": "Tekrar Dene"
         },
         "landing": {
             "launch": {
                 "pleaseWait": "Lütfen bekleyin.."
             }
+        },
+        "overlay": {
+            "dismiss": "Kapat",
+            "close": "Kapat"
+        },
+        "fatalError": {
+            "title": "Ciddi Hata: Dağıtım Dizini Yüklenemiyor",
+            "desc": "Dağıtım dizinini indirmek için sunucularımıza bağlantı kurulamadı. Yüklenecek yerel kopya da yoktu.<br><br>Dağıtım dizini, en güncel sunucu bilgilerini sağlayan zorunlu bir dosyadır. Launcher bu dosya olmadan başlayamaz. İnternete bağlı olduğunuzdan emin olun ve uygulamayı yeniden başlatın.",
+            "close": "Kapat"
+        },
+        "loginRefreshFailed": {
+            "title": "Giriş Yenilenemedi",
+            "desc": "Giriş <strong>{name}</strong> hesabı için yenilenemedi. Lütfen {please}tekrar giriş yapın.",
+            "pleasePrefix": "başka hesap seçin veya ",
+            "login": "Giriş",
+            "selectAnotherAccount": "Başka Hesap Seç"
         }
     }
 }

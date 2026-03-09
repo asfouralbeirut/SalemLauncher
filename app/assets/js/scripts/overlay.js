@@ -1,6 +1,7 @@
 /**
  * Script for overlay.ejs
  */
+const Lang = require('../langloader')
 
 /* Overlay Wrapper Functions */
 
@@ -130,7 +131,8 @@ function toggleServerSelection(toggleState){
  * @param {string} acknowledge Acknowledge button text.
  * @param {string} dismiss Dismiss button text.
  */
-function setOverlayContent(title, description, acknowledge, dismiss = 'Dismiss'){
+function setOverlayContent(title, description, acknowledge, dismiss){
+    if (dismiss == null) dismiss = (Lang.queryJS('overlay.dismiss') || 'Kapat')
     document.getElementById('overlayTitle').innerHTML = title
     document.getElementById('overlayDesc').innerHTML = description
     document.getElementById('overlayAcknowledge').innerHTML = acknowledge

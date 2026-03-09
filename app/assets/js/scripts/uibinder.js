@@ -10,6 +10,8 @@ const ConfigManager = require('./assets/js/configmanager')
 const DistroManager = require('./assets/js/distromanager')
 const Lang          = require('./assets/js/langloader')
 
+window.Lang = Lang
+
 let rscShouldLoad = false
 let fatalStartupError = false
 
@@ -115,9 +117,9 @@ function showFatalStartupError(){
         $('#loadingContainer').fadeOut(250, () => {
             document.getElementById('overlayContainer').style.background = 'none'
             setOverlayContent(
-                'Fatal Error: Unable to Load Distribution Index',
-                'A connection could not be established to our servers to download the distribution index. No local copies were available to load. <br><br>The distribution index is an essential file which provides the latest server information. The launcher is unable to start without it. Ensure you are connected to the internet and relaunch the application.',
-                'Close'
+                Lang.queryJS('fatalError.title'),
+                Lang.queryJS('fatalError.desc'),
+                Lang.queryJS('fatalError.close')
             )
             setOverlayHandler(() => {
                 const window = remote.getCurrentWindow()
@@ -345,10 +347,12 @@ async function validateSelectedAccount(){
             ConfigManager.save()
             const accLen = Object.keys(ConfigManager.getAuthAccounts()).length
             setOverlayContent(
-                'Failed to Refresh Login',
-                `We were unable to refresh the login for <strong>${selectedAcc.displayName}</strong>. Please ${accLen > 0 ? 'select another account or ' : ''} login again.`,
-                'Login',
-                'Select Another Account'
+                Lang.queryJS('loginRefreshFailed.title'),
+                Lang.queryJS('loginRefreshFailed.desc')
+                    .replace('{name}', selectedAcc.displayName)
+                    .replace('{please}', accLen > 0 ? (Lang.queryJS('loginRefreshFailed.pleasePrefix') || '') : ''),
+                Lang.queryJS('loginRefreshFailed.login'),
+                Lang.queryJS('loginRefreshFailed.selectAnotherAccount')
             )
             setOverlayHandler(() => {
 

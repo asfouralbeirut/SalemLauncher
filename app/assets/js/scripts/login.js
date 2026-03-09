@@ -127,10 +127,10 @@ function loginDisabled(v){
 function loginLoading(v){
     if(v){
         loginButton.setAttribute('loading', v)
-        loginButton.innerHTML = loginButton.innerHTML.replace('GİRİŞ YAP', 'Giriş yapılıyor...')
+        loginButton.innerHTML = loginButton.innerHTML.replace(Lang.queryJS('login.loginButton') || 'GİRİŞ YAP', Lang.queryJS('login.loggingIn') || 'Giriş yapılıyor...')
     } else {
         loginButton.removeAttribute('loading')
-        loginButton.innerHTML = loginButton.innerHTML.replace('Giriş yapılıyor...', 'GİRİŞ YAP')
+        loginButton.innerHTML = loginButton.innerHTML.replace(Lang.queryJS('login.loggingIn') || 'Giriş yapılıyor...', Lang.queryJS('login.loginButton') || 'GİRİŞ YAP')
     }
 }
 
@@ -186,7 +186,7 @@ loginButton.addEventListener('click', () => {
 
     AuthManager.addCraftOfSalemAccount(loginUsername.value, loginPassword.value).then((value) => {
         updateSelectedAccount(value)
-        loginButton.innerHTML = loginButton.innerHTML.replace('Giriş yapılıyor...', 'Başarılı')
+        loginButton.innerHTML = loginButton.innerHTML.replace(Lang.queryJS('login.loggingIn') || 'Giriş yapılıyor...', Lang.queryJS('login.success') || 'Başarılı')
         $('.circle-loader').toggleClass('load-complete')
         $('.checkmark').toggle()
         setTimeout(() => {
@@ -202,7 +202,7 @@ loginButton.addEventListener('click', () => {
                 $('.circle-loader').toggleClass('load-complete')
                 $('.checkmark').toggle()
                 loginLoading(false)
-                loginButton.innerHTML = loginButton.innerHTML.replace('Başarılı', 'GİRİŞ YAP')
+                loginButton.innerHTML = loginButton.innerHTML.replace(Lang.queryJS('login.success') || 'Başarılı', Lang.queryJS('login.loginButton') || 'GİRİŞ YAP')
                 formDisabled(false)
             })
         }, 1000)
@@ -212,7 +212,7 @@ loginButton.addEventListener('click', () => {
             ? displayableError
             : { title: 'Giriş hatası', desc: displayableError && displayableError.desc ? displayableError.desc : 'Beklenmeyen bir hata oluştu.' }
 
-        setOverlayContent(actualDisplayableError.title, actualDisplayableError.desc, 'Tekrar dene')
+        setOverlayContent(actualDisplayableError.title, actualDisplayableError.desc, Lang.queryJS('login.tryAgain'))
         setOverlayHandler(() => {
             formDisabled(false)
             toggleOverlay(false)
