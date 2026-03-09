@@ -404,6 +404,14 @@ class ProcessBuilder {
             }
         }
 
+        // Fabric: pass game jar via system property so it is not on classpath (avoids duplicate ASM if game jar bundles ASM).
+        if (this.forgeData && this.forgeData.loaderType === 'fabric') {
+            const gameJarPath = path.join(this.commonDir, 'versions', this.versionData.id, this.versionData.id + '.jar')
+            if (fs.existsSync(gameJarPath)) {
+                args.push('-Dfabric.gameJarPath.client=' + gameJarPath)
+            }
+        }
+
         //args.push('-Dlog4j.configurationFile=D:\\WesterosCraft\\game\\common\\assets\\log_configs\\client-1.12.xml')
 
         // Java Arguments
@@ -721,6 +729,10 @@ class ProcessBuilder {
             // Remove any remaining Mojang ASM libs (different key format can leave duplicates).
             Object.keys(mojangLibs).forEach((k) => {
                 if (k.startsWith('org.ow2.asm')) delete mojangLibs[k]
+            })
+            // Minecraft 1.21+ game jar can bundle ASM; exclude it from classpath and pass via system property to avoid duplicate ASM.
+            Object.keys(mojangLibs).forEach((k) => {
+                if (k.startsWith('com.mojang:minecraft')) delete mojangLibs[k]
             })
         }
 
