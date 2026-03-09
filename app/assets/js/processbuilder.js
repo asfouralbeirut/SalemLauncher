@@ -742,14 +742,23 @@ class ProcessBuilder {
         // maven identifier will override the mojang ones.
         const finalLibs = {...mojangLibs, ...servLibs}
         let libPaths = Object.values(finalLibs)
-        // Fabric: deduplicate by real path so the same jar is never on classpath twice (fixes "duplicate ASM").
+        // Fabric: deduplicate by real path and drop any non-Fabric jar that contains ASM (fixes "duplicate ASM").
         if (isFabric) {
+            const fabricPaths = new Set((this.forgeData.libraries || []).map(p => {
+                try { return fs.realpathSync(path.normalize(p)) } catch (_) { return path.normalize(p) }
+            }))
+            const loaderPath = servLibs['net.fabricmc:fabric-loader']
+            if (loaderPath) {
+                try { fabricPaths.add(fs.realpathSync(path.normalize(loaderPath))) } catch (_) { fabricPaths.add(path.normalize(loaderPath)) }
+            }
             const seen = new Set()
             libPaths = libPaths.filter((p) => {
                 try {
                     const resolved = fs.realpathSync(path.normalize(p))
                     if (seen.has(resolved)) return false
                     seen.add(resolved)
+                    if (fabricPaths.has(resolved)) return true
+                    if (this._jarContainsASM(resolved)) return false
                     return true
                 } catch (_) {
                     return true
@@ -761,6 +770,22 @@ class ProcessBuilder {
         this._processClassPathList(cpArgs)
 
         return cpArgs
+    }
+
+    /**
+     * True if the jar at path contains org/objectweb/asm/ClassReader.class (Fabric duplicate-ASM check).
+     * @param {string} jarPath
+     * @returns {boolean}
+     */
+    _jarContainsASM(jarPath){
+        if (!jarPath || !fs.existsSync(jarPath) || !jarPath.toLowerCase().endsWith('.jar')) return false
+        try {
+            const zip = new AdmZip(jarPath)
+            const entry = zip.getEntry('org/objectweb/asm/ClassReader.class')
+            return entry != null
+        } catch (_) {
+            return false
+        }
     }
 
     /**
