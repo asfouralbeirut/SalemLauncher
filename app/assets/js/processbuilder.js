@@ -728,7 +728,12 @@ class ProcessBuilder {
         // maven identifier will override the mojang ones.
         // Ex. 1.7.10 forge overrides mojang's guava with newer version.
         const finalLibs = {...mojangLibs, ...servLibs}
-        cpArgs = cpArgs.concat(Object.values(finalLibs))
+        const libPaths = Object.values(finalLibs)
+        // Fabric: avoid duplicate paths on classpath (same jar under different keys causes "duplicate ASM").
+        const uniquePaths = (this.forgeData && this.forgeData.loaderType === 'fabric')
+            ? [...new Set(libPaths.map(p => path.normalize(p)))]
+            : libPaths
+        cpArgs = cpArgs.concat(uniquePaths)
 
         this._processClassPathList(cpArgs)
 
