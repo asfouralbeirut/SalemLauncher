@@ -45,17 +45,6 @@
             </div>
         </div>
     </div>
-    <script>
-        // Load language (Türkçe / dil dosyasından metinleri uygula)
-        if (window.Lang && typeof Lang.query === 'function') {
-            var htmlStrings = Lang.query('html');
-            if (htmlStrings && typeof htmlStrings === 'object') {
-                for (var key in htmlStrings) {
-                    var el = document.getElementById(key);
-                    if (el && htmlStrings[key]) el.innerHTML = htmlStrings[key];
-                }
-            }
-        }
-    </script>
+    <script src="./assets/js/scripts/apply-lang.js"></script>
 </body>
 </html>
