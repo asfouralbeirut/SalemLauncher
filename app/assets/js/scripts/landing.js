@@ -702,11 +702,18 @@ function dlAsync(login = true){
                     // Build Minecraft process.
                     proc = pb.build()
 
-                    // Bind listeners to stdout.
-                    proc.stdout.on('data', tempListener)
-                    proc.stderr.on('data', gameErrorListener)
+                    // Bind listeners to stdout/stderr (only when not detached - they are null when stdio: 'ignore').
+                    if (proc.stdout) proc.stdout.on('data', tempListener)
+                    if (proc.stderr) proc.stderr.on('data', gameErrorListener)
 
                     setLaunchDetails('Done. Enjoy the server!')
+
+                    // When game exits with error, show it (e.g. crash before window opens).
+                    proc.on('close', (code, signal) => {
+                        if (code != null && code !== 0) {
+                            setLaunchDetails('Oyun beklenmedik şekilde kapandı (çıkış kodu: ' + code + '). Konsolu kontrol et.')
+                        }
+                    })
 
                     // Init Discord Hook
                     const distro = DistroManager.getDistribution()

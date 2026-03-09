@@ -63,25 +63,31 @@ class ProcessBuilder {
 
         const child = child_process.spawn(ConfigManager.getJavaExecutable(this.server.getID()), args, {
             cwd: this.gameDir,
-            detached: ConfigManager.getLaunchDetached()
+            detached: ConfigManager.getLaunchDetached(),
+            stdio: ConfigManager.getLaunchDetached() ? 'ignore' : ['ignore', 'pipe', 'pipe']
         })
 
         if(ConfigManager.getLaunchDetached()){
             child.unref()
         }
 
-        child.stdout.setEncoding('utf8')
-        child.stderr.setEncoding('utf8')
-
-        child.stdout.on('data', (data) => {
-            data.trim().split('\n').forEach(x => console.log(`\x1b[32m[Minecraft]\x1b[0m ${x}`))
-            
-        })
-        child.stderr.on('data', (data) => {
-            data.trim().split('\n').forEach(x => console.log(`\x1b[31m[Minecraft]\x1b[0m ${x}`))
-        })
+        if (child.stdout) {
+            child.stdout.setEncoding('utf8')
+            child.stdout.on('data', (data) => {
+                data.trim().split('\n').forEach(x => console.log(`\x1b[32m[Minecraft]\x1b[0m ${x}`))
+            })
+        }
+        if (child.stderr) {
+            child.stderr.setEncoding('utf8')
+            child.stderr.on('data', (data) => {
+                data.trim().split('\n').forEach(x => console.log(`\x1b[31m[Minecraft]\x1b[0m ${x}`))
+            })
+        }
         child.on('close', (code, signal) => {
             logger.info('Exited with code', code)
+            if (code != null && code !== 0) {
+                logger.warn('Game process exited with non-zero code. The game window may not have opened.')
+            }
             fs.remove(tempNativePath, (err) => {
                 if(err){
                     logger.warn('Error while deleting temp dir', err)
@@ -494,6 +500,12 @@ class ProcessBuilder {
                         case 'version_type':
                             val = this.versionData.type
                             break
+                        case 'clientid':
+                            val = this.authUser.uuid || (crypto && crypto.randomUUID ? crypto.randomUUID() : '0')
+                            break
+                        case 'auth_xuid':
+                            val = (this.authUser.xuid != null && this.authUser.xuid !== '') ? String(this.authUser.xuid) : '0'
+                            break
                         case 'resolution_width':
                             val = ConfigManager.getGameWidth()
                             break
@@ -598,6 +610,12 @@ class ProcessBuilder {
                         break
                     case 'version_type':
                         val = this.versionData.type
+                        break
+                    case 'clientid':
+                        val = this.authUser.uuid || (crypto && crypto.randomUUID ? crypto.randomUUID() : '0')
+                        break
+                    case 'auth_xuid':
+                        val = (this.authUser.xuid != null && this.authUser.xuid !== '') ? String(this.authUser.xuid) : '0'
                         break
                 }
                 if(val != null){
