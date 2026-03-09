@@ -718,6 +718,10 @@ class ProcessBuilder {
                     delete mojangLibs[key]
                 }
             })
+            // Remove any remaining Mojang ASM libs (different key format can leave duplicates).
+            Object.keys(mojangLibs).forEach((k) => {
+                if (k.startsWith('org.ow2.asm')) delete mojangLibs[k]
+            })
         }
 
         // Merge libraries, server libs with the same
