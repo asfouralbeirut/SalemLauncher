@@ -1567,6 +1567,98 @@ class AssetGuard extends EventEmitter {
         })
     }
 
+    /**
+     * Load Fabric profile data (mainClass, arguments, libraries) for the given server.
+     * @param {Server} server
+     * @returns {Promise.<Object>} forgeData-shaped object with loaderType: 'fabric'
+     */
+    loadFabricData(server){
+        const self = this
+        return new Promise((resolve, reject) => {
+            const profilePath = this._getFabricProfilePath(server)
+            if (!profilePath || !fs.existsSync(profilePath)) {
+                reject('No Fabric module found!')
+                return
+            }
+            try {
+                const profile = JSON.parse(fs.readFileSync(profilePath, 'utf-8'))
+                const libPath = path.join(self.commonPath, 'libraries')
+                const libraryPaths = []
+                for (const lib of (profile.libraries || [])) {
+                    const name = lib.name || ''
+                    if (!name) continue
+                    const parts = name.split(':')
+                    const group = (parts[0] || '').replace(/\./g, '/')
+                    const artifact = parts[1] || 'artifact'
+                    const version = parts[2] || '0'
+                    const jarName = artifact + '-' + version + '.jar'
+                    libraryPaths.push(path.join(libPath, group, artifact, version, jarName))
+                }
+                const loaderData = {
+                    id: profile.id || ('fabric-' + server.getMinecraftVersion()),
+                    mainClass: profile.mainClass || 'net.fabricmc.loader.impl.launch.knot.KnotClient',
+                    arguments: profile.arguments || { jvm: [], game: [] },
+                    minecraftArguments: profile.minecraftArguments || '',
+                    loaderType: 'fabric',
+                    libraries: libraryPaths
+                }
+                if (!loaderData.arguments.jvm) loaderData.arguments.jvm = []
+                if (!loaderData.arguments.game) loaderData.arguments.game = []
+                resolve(loaderData)
+            } catch (e) {
+                reject(e)
+            }
+        })
+    }
+
+    _getFabricProfilePath(server){
+        const modules = server.getModules() || []
+        for (const ob of modules) {
+            if (ob.getType() === DistroManager.Types.FabricHosted && ob.getSubModules()) {
+                for (const sub of ob.getSubModules()) {
+                    if (sub.getType() === DistroManager.Types.FabricVersionManifest) {
+                        return sub.getArtifact().getPath()
+                    }
+                }
+            }
+        }
+        return null
+    }
+
+    _enqueueFabricLibraries(server){
+        const profilePath = this._getFabricProfilePath(server)
+        if (!profilePath || !fs.existsSync(profilePath)) return
+        let profile
+        try {
+            profile = JSON.parse(fs.readFileSync(profilePath, 'utf-8'))
+        } catch (e) {
+            AssetGuard.logger.warn('Could not parse Fabric profile', e)
+            return
+        }
+        const libs = profile.libraries || []
+        const libPath = path.join(this.commonPath, 'libraries')
+        for (const lib of libs) {
+            const name = lib.name || lib.url
+            if (!name) continue
+            const parts = name.split(':')
+            const group = (parts[0] || '').replace(/\./g, '/')
+            const artifact = parts[1] || 'artifact'
+            const version = parts[2] || '0'
+            const jarName = artifact + '-' + version + '.jar'
+            let url = (lib.downloads && lib.downloads.artifact && lib.downloads.artifact.url) ? lib.downloads.artifact.url : null
+            if (!url) {
+                const baseUrl = (lib.url || '').replace(/\/?$/, '/')
+                url = baseUrl + group + '/' + artifact + '/' + version + '/' + jarName
+            }
+            const toPath = path.join(libPath, group, artifact, version, jarName)
+            if (!fs.existsSync(toPath)) {
+                const size = (lib.downloads && lib.downloads.artifact && lib.downloads.artifact.size) ? lib.downloads.artifact.size : 0
+                this.forge.dlqueue.push(new Asset(name, lib.downloads && lib.downloads.artifact ? lib.downloads.artifact.sha1 : null, size, url, toPath))
+                this.forge.dlsize += size
+            }
+        }
+    }
+
     _parseForgeLibraries(){
         /* TODO
         * Forge asset validations are already implemented. When there's nothing much
@@ -1880,8 +1972,25 @@ class AssetGuard extends EventEmitter {
             this.emit('validate', 'files')
             await this.processDlQueues()
             //this.emit('complete', 'download')
-            const forgeData = await this.loadForgeData(server)
-        
+            let forgeData
+            try {
+                forgeData = await this.loadForgeData(server)
+            } catch (e) {
+                if (e === 'No forge module found!') {
+                    this._enqueueFabricLibraries(server)
+                    if (this.forge.dlqueue.length > 0) {
+                        await this.processDlQueues()
+                    }
+                    try {
+                        forgeData = await this.loadFabricData(server)
+                    } catch (fabricErr) {
+                        return { versionData: null, forgeData: null, error: fabricErr }
+                    }
+                } else {
+                    return { versionData: null, forgeData: null, error: e }
+                }
+            }
+
             return {
                 versionData,
                 forgeData
