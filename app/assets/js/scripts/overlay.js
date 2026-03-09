@@ -1,7 +1,7 @@
 /**
  * Script for overlay.ejs
  */
-const Lang = require('../langloader')
+const Lang = (typeof window !== 'undefined' && window.Lang && typeof window.Lang.queryJS === 'function') ? window.Lang : require('../langloader')
 
 /* Overlay Wrapper Functions */
 

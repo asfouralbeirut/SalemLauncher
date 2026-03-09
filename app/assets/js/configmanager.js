@@ -9,8 +9,8 @@ const sysRoot = process.env.APPDATA || (process.platform == 'darwin' ? process.e
 // Launcher veri dizini (oyun dosyaları, config vb. burada saklanır)
 const dataPath = path.join(sysRoot, '.salemlauncher')
 
-// Forked processes do not have access to electron, so we have this workaround.
-const launcherDir = process.env.CONFIG_DIRECT_PATH || require('@electron/remote').app.getPath('userData')
+// Tüm launcher verisi .salemlauncher altında (Electron userData yerine)
+const launcherDir = process.env.CONFIG_DIRECT_PATH || dataPath
 
 /**
  * Retrieve the absolute path of the launcher directory.

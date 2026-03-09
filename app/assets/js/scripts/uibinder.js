@@ -8,14 +8,16 @@ const path          = require('path')
 const AuthManager   = require('./assets/js/authmanager')
 const ConfigManager = require('./assets/js/configmanager')
 const DistroManager = require('./assets/js/distromanager')
-const Lang          = require('./assets/js/langloader')
-
-// Dil: config yüklü değilse veya hata olursa varsayılan Türkçe. Renderer'da mutlaka yükle.
-let langId = 'tr_TR'
-try {
-    if (ConfigManager && typeof ConfigManager.getLanguage === 'function') langId = ConfigManager.getLanguage() || 'tr_TR'
-} catch (e) { /* config henüz yoksa tr_TR kullan */ }
-Lang.loadLanguage(langId)
+// Preload zaten window.Lang ile dili yükledi; onu kullan
+let Lang
+if (typeof window !== 'undefined' && window.Lang && typeof window.Lang.query === 'function') {
+    Lang = window.Lang
+} else {
+    Lang = require('./assets/js/langloader')
+    let langId = 'tr_TR'
+    try { if (ConfigManager && typeof ConfigManager.getLanguage === 'function') langId = ConfigManager.getLanguage() || 'tr_TR' } catch (e) {}
+    Lang.loadLanguage(langId)
+}
 window.Lang = Lang
 
 let rscShouldLoad = false

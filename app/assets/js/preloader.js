@@ -15,8 +15,14 @@ logger.info('Loading..')
 // Load ConfigManager
 ConfigManager.load()
 
-// Load Strings
-LangLoader.loadLanguage(ConfigManager.getLanguage() || 'tr_TR')
+// Dil: config'ten oku, varsayılan Türkçe. Sayfa bu Lang'i kullanacak.
+const langId = ConfigManager.getLanguage() || 'tr_TR'
+LangLoader.loadLanguage(langId)
+window.Lang = {
+    query: LangLoader.query.bind(LangLoader),
+    queryJS: LangLoader.queryJS.bind(LangLoader),
+    loadLanguage: LangLoader.loadLanguage.bind(LangLoader)
+}
 
 function onDistroLoad(data){
     if(data != null){
