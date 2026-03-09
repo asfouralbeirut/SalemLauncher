@@ -1984,7 +1984,13 @@ class AssetGuard extends EventEmitter {
                     try {
                         forgeData = await this.loadFabricData(server)
                     } catch (fabricErr) {
-                        return { versionData: null, forgeData: null, error: fabricErr }
+                        // Fabric yoksa vanilla ile aç (Forge/Fabric istemiyorsa sadece oyun açılsın)
+                        forgeData = {
+                            mainClass: versionData.mainClass || 'net.minecraft.client.main.Main',
+                            arguments: { jvm: [], game: versionData.arguments && versionData.arguments.game ? versionData.arguments.game : [] },
+                            loaderType: 'vanilla',
+                            libraries: []
+                        }
                     }
                 } else {
                     return { versionData: null, forgeData: null, error: e }

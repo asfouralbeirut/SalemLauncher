@@ -409,6 +409,8 @@ class ProcessBuilder {
             const gameJarPath = path.join(this.commonDir, 'versions', this.versionData.id, this.versionData.id + '.jar')
             if (fs.existsSync(gameJarPath)) {
                 args.push('-Dfabric.gameJarPath.client=' + gameJarPath)
+            } else {
+                logger.warn('[Fabric] Oyun JAR bulunamadı: ' + gameJarPath + ' — Launcher ile oyunu bir kez doğrulayıp indirmeyi tamamlayın.')
             }
         }
 
@@ -698,9 +700,11 @@ class ProcessBuilder {
     classpathArg(mods, tempNativePath){
         let cpArgs = []
 
-        // Add version.jar for pre-1.17 only. For Fabric we pass game jar via -Dfabric.gameJarPath.client, so skip here.
+        // Version jar: pre-1.17 always; 1.17+ only for vanilla (Fabric'te oyun jar -Dfabric.gameJarPath.client ile veriliyor).
         const isFabric = this.forgeData && this.forgeData.loaderType === 'fabric'
-        if(!Util.mcVersionAtLeast('1.17', this.server.getMinecraftVersion()) && !isFabric) {
+        const isVanilla = this.forgeData && this.forgeData.loaderType === 'vanilla'
+        const addVersionJar = (!Util.mcVersionAtLeast('1.17', this.server.getMinecraftVersion()) && !isFabric) || isVanilla
+        if (addVersionJar) {
             const version = this.versionData.id
             cpArgs.push(path.join(this.commonDir, 'versions', version, version + '.jar'))
         }
