@@ -15,8 +15,67 @@ const { RestResponseStatus } = require('helios-core/common')
 const { MojangRestAPI, mojangErrorDisplayable, MojangErrorCode } = require('helios-core/mojang')
 const { MicrosoftAuth, microsoftErrorDisplayable, MicrosoftErrorCode } = require('helios-core/microsoft')
 const { AZURE_CLIENT_ID }    = require('./ipcconstants')
+const { CRAFT_OF_SALEM_LOGIN_URL } = require('./craftofsalem-auth')
+const got = require('got')
+const crypto = require('crypto')
 
 const log = LoggerUtil.getLogger('AuthManager')
+
+/**
+ * Cracked/offline sunucular için Minecraft uyumlu UUID üretir (OfflinePlayer:username).
+ * @param {string} username Kullanıcı adı
+ * @returns {string} UUID formatında string
+ */
+function getOfflineUUID(username) {
+    const hash = crypto.createHash('md5').update('OfflinePlayer:' + username, 'utf8').digest()
+    hash[6] = (hash[6] & 0x0f) | 0x30
+    hash[8] = (hash[8] & 0x3f) | 0x80
+    return hash.toString('hex').replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5')
+}
+
+/**
+ * Craft Of Salem sitesi ile giriş (crackli sunucu). API'ye POST atar, başarılıysa hesabı ekler.
+ * @param {string} username Kullanıcı adı
+ * @param {string} password Şifre
+ * @returns {Promise.<Object>} Doğrulanmış hesap nesnesi
+ */
+exports.addCraftOfSalemAccount = async function(username, password) {
+    try {
+        const res = await got.post(CRAFT_OF_SALEM_LOGIN_URL, {
+            json: { username: username.trim(), password },
+            responseType: 'json',
+            timeout: { request: 10000 }
+        })
+        const body = res.body
+        if (body && body.success === true && (body.username != null || body.displayName != null)) {
+            const displayName = (body.username || body.displayName || username).trim()
+            // Siteden uuid dönüyorsa onu kullan (Users.uuid), yoksa offline UUID üret
+            const uuid = (body.uuid && typeof body.uuid === 'string' && body.uuid.trim()) ? body.uuid.trim() : getOfflineUUID(displayName)
+            const ret = ConfigManager.addCraftOfSalemAuthAccount(uuid, displayName, username.trim())
+            ConfigManager.save()
+            return ret
+        }
+        return Promise.reject({ title: 'Giriş hatası', desc: (body && body.message) ? body.message : 'Giriş başarısız.' })
+    } catch (err) {
+        if (err.response && err.response.body) {
+            const b = err.response.body
+            const msg = (typeof b === 'object' && b.message) ? b.message : 'Giriş başarısız.'
+            return Promise.reject({ title: 'Giriş hatası', desc: msg })
+        }
+        log.error('Craft Of Salem login error', err)
+        const msg = (err.code === 'ETIMEDOUT' || err.code === 'ECONNREFUSED') ? 'Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.' : 'Giriş yapılamadı.'
+        return Promise.reject({ title: 'Giriş hatası', desc: msg })
+    }
+}
+
+/**
+ * Craft Of Salem hesabını kaldırır (sunucuya istek atmaz).
+ */
+exports.removeCraftOfSalemAccount = async function(uuid) {
+    ConfigManager.removeAuthAccount(uuid)
+    ConfigManager.save()
+    return Promise.resolve()
+}
 
 // Functions
 
@@ -305,11 +364,14 @@ async function validateSelectedMicrosoftAccount(){
  */
 exports.validateSelected = async function(){
     const current = ConfigManager.getSelectedAccount()
+    if (!current) return false
 
+    if (current.type === 'craftofsalem') {
+        return true
+    }
     if(current.type === 'microsoft') {
         return await validateSelectedMicrosoftAccount()
     } else {
         return await validateSelectedMojangAccount()
     }
-    
 }

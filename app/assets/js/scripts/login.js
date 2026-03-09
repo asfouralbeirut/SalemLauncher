@@ -127,10 +127,10 @@ function loginDisabled(v){
 function loginLoading(v){
     if(v){
         loginButton.setAttribute('loading', v)
-        loginButton.innerHTML = loginButton.innerHTML.replace(Lang.queryJS('login.login'), Lang.queryJS('login.loggingIn'))
+        loginButton.innerHTML = loginButton.innerHTML.replace('GİRİŞ YAP', 'Giriş yapılıyor...')
     } else {
         loginButton.removeAttribute('loading')
-        loginButton.innerHTML = loginButton.innerHTML.replace(Lang.queryJS('login.loggingIn'), Lang.queryJS('login.login'))
+        loginButton.innerHTML = loginButton.innerHTML.replace('Giriş yapılıyor...', 'GİRİŞ YAP')
     }
 }
 
@@ -181,52 +181,38 @@ loginForm.onsubmit = () => { return false }
 
 // Bind login button behavior.
 loginButton.addEventListener('click', () => {
-    // Disable form.
     formDisabled(true)
-
-    // Show loading stuff.
     loginLoading(true)
 
-    AuthManager.addMojangAccount(loginUsername.value, loginPassword.value).then((value) => {
+    AuthManager.addCraftOfSalemAccount(loginUsername.value, loginPassword.value).then((value) => {
         updateSelectedAccount(value)
-        loginButton.innerHTML = loginButton.innerHTML.replace(Lang.queryJS('login.loggingIn'), Lang.queryJS('login.success'))
+        loginButton.innerHTML = loginButton.innerHTML.replace('Giriş yapılıyor...', 'Başarılı')
         $('.circle-loader').toggleClass('load-complete')
         $('.checkmark').toggle()
         setTimeout(() => {
             switchView(VIEWS.login, loginViewOnSuccess, 500, 500, () => {
-                // Temporary workaround
                 if(loginViewOnSuccess === VIEWS.settings){
                     prepareSettings()
                 }
-                loginViewOnSuccess = VIEWS.landing // Reset this for good measure.
-                loginCancelEnabled(false) // Reset this for good measure.
-                loginViewCancelHandler = null // Reset this for good measure.
+                loginViewOnSuccess = VIEWS.landing
+                loginCancelEnabled(false)
+                loginViewCancelHandler = null
                 loginUsername.value = ''
                 loginPassword.value = ''
                 $('.circle-loader').toggleClass('load-complete')
                 $('.checkmark').toggle()
                 loginLoading(false)
-                loginButton.innerHTML = loginButton.innerHTML.replace(Lang.queryJS('login.success'), Lang.queryJS('login.login'))
+                loginButton.innerHTML = loginButton.innerHTML.replace('Başarılı', 'GİRİŞ YAP')
                 formDisabled(false)
             })
         }, 1000)
     }).catch((displayableError) => {
         loginLoading(false)
+        const actualDisplayableError = (displayableError && displayableError.title != null && displayableError.desc != null)
+            ? displayableError
+            : { title: 'Giriş hatası', desc: displayableError && displayableError.desc ? displayableError.desc : 'Beklenmeyen bir hata oluştu.' }
 
-        let actualDisplayableError
-        if(isDisplayableError(displayableError)) {
-            msftLoginLogger.error('Error while logging in.', displayableError)
-            actualDisplayableError = displayableError
-        } else {
-            // Uh oh.
-            msftLoginLogger.error('Unhandled error during login.', displayableError)
-            actualDisplayableError = {
-                title: 'Unknown Error During Login',
-                desc: 'An unknown error has occurred. Please see the console for details.'
-            }
-        }
-
-        setOverlayContent(actualDisplayableError.title, actualDisplayableError.desc, Lang.queryJS('login.tryAgain'))
+        setOverlayContent(actualDisplayableError.title, actualDisplayableError.desc, 'Tekrar dene')
         setOverlayHandler(() => {
             formDisabled(false)
             toggleOverlay(false)

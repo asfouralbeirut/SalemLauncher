@@ -379,6 +379,8 @@ async function validateSelectedAccount(){
                                 selectedAcc.microsoft.refresh_token,
                                 selectedAcc.microsoft.expires_at
                             )
+                        } else if(selectedAcc.type === 'craftofsalem') {
+                            ConfigManager.addCraftOfSalemAuthAccount(selectedAcc.uuid, selectedAcc.displayName, selectedAcc.username)
                         } else {
                             ConfigManager.addMojangAuthAccount(selectedAcc.uuid, selectedAcc.accessToken, selectedAcc.username, selectedAcc.displayName)
                         }

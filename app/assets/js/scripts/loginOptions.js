@@ -1,4 +1,5 @@
 const loginOptionsCancelContainer = document.getElementById('loginOptionCancelContainer')
+const loginOptionCraftOfSalem = document.getElementById('loginOptionCraftOfSalem')
 const loginOptionMicrosoft = document.getElementById('loginOptionMicrosoft')
 const loginOptionMojang = document.getElementById('loginOptionMojang')
 const loginOptionsCancelButton = document.getElementById('loginOptionCancelButton')
@@ -16,6 +17,14 @@ function loginOptionsCancelEnabled(val){
     } else {
         $(loginOptionsCancelContainer).hide()
     }
+}
+
+loginOptionCraftOfSalem.onclick = (e) => {
+    switchView(getCurrentView(), VIEWS.login, 500, 500, () => {
+        loginViewOnSuccess = loginOptionsViewOnLoginSuccess
+        loginViewOnCancel = loginOptionsViewOnLoginCancel
+        loginCancelEnabled(true)
+    })
 }
 
 loginOptionMicrosoft.onclick = (e) => {

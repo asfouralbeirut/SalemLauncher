@@ -418,6 +418,25 @@ exports.addMicrosoftAuthAccount = function(uuid, accessToken, name, mcExpires, m
 }
 
 /**
+ * Craft Of Salem / crackli sunucu hesabı ekler (site API ile doğrulanmış).
+ * @param {string} uuid Offline UUID (getOfflineUUID ile üretilmiş)
+ * @param {string} displayName Oyunda görünecek isim
+ * @param {string} username Girişte kullanılan kullanıcı adı
+ * @returns {Object} Eklenen hesap nesnesi
+ */
+exports.addCraftOfSalemAuthAccount = function(uuid, displayName, username) {
+    config.selectedAccount = uuid
+    config.authenticationDatabase[uuid] = {
+        type: 'craftofsalem',
+        accessToken: 'offline',
+        username: username.trim(),
+        uuid: uuid.trim(),
+        displayName: displayName.trim()
+    }
+    return config.authenticationDatabase[uuid]
+}
+
+/**
  * Remove an authenticated account from the database. If the account
  * was also the selected account, a new one will be selected. If there
  * are no accounts, the selected account will be null.

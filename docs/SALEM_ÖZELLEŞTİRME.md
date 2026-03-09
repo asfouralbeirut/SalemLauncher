@@ -11,6 +11,7 @@ Bu launcher **Craft Of Salem** sunucusu için yapılandırılmıştır.
 - **Discord:** https://discord.gg/BeUW3P5fTA
 - **Distribution:** GitHub’dan – `https://raw.githubusercontent.com/craftofsalem/SalemLauncher/main/distribution.json`  
   (Dal veya dosya yolu farklıysa `app/assets/js/distromanager.js` içindeki `distroURL` değiştirin.)
+- **Giriş:** Craft Of Salem sitesi üzerinden (crackli sunucu). Mojang/Microsoft kullanılmaz. API: `docs/CRAFT_OF_SALEM_GIRIS_API.md`
 
 ## 2. distribution.json içeriği
 
