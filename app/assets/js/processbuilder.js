@@ -691,9 +691,11 @@ class ProcessBuilder {
         const servLibs = this._resolveServerLibraries(mods)
 
         // Fabric: add profile libraries from loader data (asm, intermediary, sponge-mixin, etc.)
+        // Use version-independent Maven id as key so Fabric's libs override Mojang's (avoids duplicate ASM on classpath).
         if (this.forgeData && this.forgeData.loaderType === 'fabric' && this.forgeData.libraries && this.forgeData.libraries.length) {
-            this.forgeData.libraries.forEach((p, i) => {
-                servLibs['fabric_lib_' + i] = p
+            this.forgeData.libraries.forEach((libPath) => {
+                const key = this._mavenVersionlessIdFromPath(libPath)
+                if (key) servLibs[key] = libPath
             })
         }
 
@@ -826,6 +828,24 @@ class ProcessBuilder {
         }
 
         return libs
+    }
+
+    /**
+     * Derive a version-independent Maven id (group:artifact) from a library path under libPath.
+     * Used so Fabric profile libs override Mojang libs and avoid duplicate ASM on classpath.
+     * @param {string} libPath Full path to a jar under common/libraries (Maven layout).
+     * @returns {string|null} e.g. "org.ow2.asm:asm" or null if not under libPath.
+     */
+    _mavenVersionlessIdFromPath(libPath){
+        const rel = path.relative(this.libPath, libPath)
+        if (rel.startsWith('..') || path.isAbsolute(rel)) return null
+        const parts = rel.split(path.sep)
+        if (parts.length < 3) return null
+        const jarName = parts.pop()
+        const version = parts.pop()
+        const artifact = parts.pop()
+        const group = parts.join('.')
+        return group + ':' + artifact
     }
 
     /**
