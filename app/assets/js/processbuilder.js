@@ -64,7 +64,7 @@ class ProcessBuilder {
         const child = child_process.spawn(ConfigManager.getJavaExecutable(this.server.getID()), args, {
             cwd: this.gameDir,
             detached: ConfigManager.getLaunchDetached(),
-            stdio: ConfigManager.getLaunchDetached() ? 'ignore' : ['ignore', 'pipe', 'pipe']
+            stdio: ['ignore', 'pipe', 'pipe']
         })
 
         if(ConfigManager.getLaunchDetached()){

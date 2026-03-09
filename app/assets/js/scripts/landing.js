@@ -692,26 +692,30 @@ function dlAsync(login = true){
 
                 const gameErrorListener = function(data){
                     data = data.trim()
+                    if (data) gameStderrLines.push(...data.split('\n').map(s => s.trim()).filter(Boolean))
                     if(data.indexOf('Could not find or load main class net.minecraft.launchwrapper.Launch') > -1){
                         loggerLaunchSuite.error('Game launch failed, LaunchWrapper was not downloaded properly.')
                         showLaunchFailure('Error During Launch', 'The main file, LaunchWrapper, failed to download properly. As a result, the game cannot launch.<br><br>To fix this issue, temporarily turn off your antivirus software and launch the game again.<br><br>If you have time, please <a href="https://github.com/dscalzi/HeliosLauncher/issues">submit an issue</a> and let us know what antivirus software you use. We\'ll contact them and try to straighten things out.')
                     }
                 }
+                const gameStderrLines = []
 
                 try {
                     // Build Minecraft process.
                     proc = pb.build()
 
-                    // Bind listeners to stdout/stderr (only when not detached - they are null when stdio: 'ignore').
+                    // Bind listeners to stdout/stderr.
                     if (proc.stdout) proc.stdout.on('data', tempListener)
                     if (proc.stderr) proc.stderr.on('data', gameErrorListener)
 
                     setLaunchDetails('Done. Enjoy the server!')
 
-                    // When game exits with error, show it (e.g. crash before window opens).
+                    // When game exits with error, show last stderr lines so user sees the real reason.
                     proc.on('close', (code, signal) => {
                         if (code != null && code !== 0) {
-                            setLaunchDetails('Oyun beklenmedik şekilde kapandı (çıkış kodu: ' + code + '). Konsolu kontrol et.')
+                            const tail = gameStderrLines.slice(-8).join(' ')
+                            const msg = tail ? `Çıkış kodu: ${code}. Son hata: ${tail}` : `Oyun beklenmedik şekilde kapandı (çıkış kodu: ${code}). Konsolu (Ctrl+Shift+I) kontrol et.`
+                            setLaunchDetails(msg)
                         }
                     })
 
