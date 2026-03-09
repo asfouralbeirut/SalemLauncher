@@ -698,9 +698,9 @@ class ProcessBuilder {
     classpathArg(mods, tempNativePath){
         let cpArgs = []
 
-        if(!Util.mcVersionAtLeast('1.17', this.server.getMinecraftVersion())) {
-            // Add the version.jar to the classpath.
-            // Must not be added to the classpath for Forge 1.17+.
+        // Add version.jar for pre-1.17 only. For Fabric we pass game jar via -Dfabric.gameJarPath.client, so skip here.
+        const isFabric = this.forgeData && this.forgeData.loaderType === 'fabric'
+        if(!Util.mcVersionAtLeast('1.17', this.server.getMinecraftVersion()) && !isFabric) {
             const version = this.versionData.id
             cpArgs.push(path.join(this.commonDir, 'versions', version, version + '.jar'))
         }
@@ -717,34 +717,29 @@ class ProcessBuilder {
         const servLibs = this._resolveServerLibraries(mods)
 
         // Fabric: add profile libraries from loader data (asm, intermediary, sponge-mixin, etc.)
-        // Use version-independent Maven id as key and remove same from Mojang to avoid duplicate ASM on classpath.
-        if (this.forgeData && this.forgeData.loaderType === 'fabric' && this.forgeData.libraries && this.forgeData.libraries.length) {
-            this.forgeData.libraries.forEach((libPath) => {
-                const key = this._mavenVersionlessIdFromPath(libPath)
-                if (key) {
-                    servLibs[key] = libPath
-                    delete mojangLibs[key]
-                }
-            })
-            // Remove any remaining Mojang ASM libs (different key format can leave duplicates).
+        // and remove Mojang ASM / game jar from classpath to avoid "duplicate ASM" (Fabric loader 0.16+).
+        if (isFabric) {
+            if (this.forgeData.libraries && this.forgeData.libraries.length) {
+                this.forgeData.libraries.forEach((libPath) => {
+                    const key = this._mavenVersionlessIdFromPath(libPath)
+                    if (key) {
+                        servLibs[key] = libPath
+                        delete mojangLibs[key]
+                    }
+                })
+            }
+            // Always remove Mojang ASM and game jar when Fabric (game jar passed via -Dfabric.gameJarPath.client).
             Object.keys(mojangLibs).forEach((k) => {
-                if (k.startsWith('org.ow2.asm')) delete mojangLibs[k]
-            })
-            // Minecraft 1.21+ game jar can bundle ASM; exclude it from classpath and pass via system property to avoid duplicate ASM.
-            Object.keys(mojangLibs).forEach((k) => {
-                if (k.startsWith('com.mojang:minecraft')) delete mojangLibs[k]
+                if (k.startsWith('org.ow2.asm') || k.startsWith('com.mojang:minecraft')) delete mojangLibs[k]
             })
         }
 
         // Merge libraries, server libs with the same
         // maven identifier will override the mojang ones.
-        // Ex. 1.7.10 forge overrides mojang's guava with newer version.
         const finalLibs = {...mojangLibs, ...servLibs}
         const libPaths = Object.values(finalLibs)
-        // Fabric: avoid duplicate paths on classpath (same jar under different keys causes "duplicate ASM").
-        const uniquePaths = (this.forgeData && this.forgeData.loaderType === 'fabric')
-            ? [...new Set(libPaths.map(p => path.normalize(p)))]
-            : libPaths
+        // Fabric: deduplicate paths (same jar under different keys causes "duplicate ASM").
+        const uniquePaths = isFabric ? [...new Set(libPaths.map(p => path.normalize(p)))] : libPaths
         cpArgs = cpArgs.concat(uniquePaths)
 
         this._processClassPathList(cpArgs)
