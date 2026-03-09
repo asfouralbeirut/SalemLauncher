@@ -737,10 +737,22 @@ class ProcessBuilder {
         // Merge libraries, server libs with the same
         // maven identifier will override the mojang ones.
         const finalLibs = {...mojangLibs, ...servLibs}
-        const libPaths = Object.values(finalLibs)
-        // Fabric: deduplicate paths (same jar under different keys causes "duplicate ASM").
-        const uniquePaths = isFabric ? [...new Set(libPaths.map(p => path.normalize(p)))] : libPaths
-        cpArgs = cpArgs.concat(uniquePaths)
+        let libPaths = Object.values(finalLibs)
+        // Fabric: deduplicate by real path so the same jar is never on classpath twice (fixes "duplicate ASM").
+        if (isFabric) {
+            const seen = new Set()
+            libPaths = libPaths.filter((p) => {
+                try {
+                    const resolved = fs.realpathSync(path.normalize(p))
+                    if (seen.has(resolved)) return false
+                    seen.add(resolved)
+                    return true
+                } catch (_) {
+                    return true
+                }
+            })
+        }
+        cpArgs = cpArgs.concat(libPaths)
 
         this._processClassPathList(cpArgs)
 
