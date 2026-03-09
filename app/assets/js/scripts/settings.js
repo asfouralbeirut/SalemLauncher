@@ -351,20 +351,36 @@ settingsNavDone.onclick = () => {
 const msftLoginLogger = LoggerUtil.getLogger('Microsoft Login')
 const msftLogoutLogger = LoggerUtil.getLogger('Microsoft Logout')
 
-// Bind the add mojang account button.
-document.getElementById('settingsAddMojangAccount').onclick = (e) => {
-    switchView(getCurrentView(), VIEWS.login, 500, 500, () => {
-        loginViewOnCancel = VIEWS.settings
-        loginViewOnSuccess = VIEWS.settings
-        loginCancelEnabled(true)
-    })
+// Microsoft/Mojang ekleme butonları kapatıldı (sadece Craft Of Salem)
+const settingsAddMojangAccountEl = document.getElementById('settingsAddMojangAccount')
+const settingsAddMicrosoftAccountEl = document.getElementById('settingsAddMicrosoftAccount')
+if (settingsAddMojangAccountEl) {
+    settingsAddMojangAccountEl.onclick = (e) => {
+        switchView(getCurrentView(), VIEWS.login, 500, 500, () => {
+            loginViewOnCancel = VIEWS.settings
+            loginViewOnSuccess = VIEWS.settings
+            loginCancelEnabled(true)
+        })
+    }
+}
+if (settingsAddMicrosoftAccountEl) {
+    settingsAddMicrosoftAccountEl.onclick = (e) => {
+        switchView(getCurrentView(), VIEWS.waiting, 500, 500, () => {
+            ipcRenderer.send(MSFT_OPCODE.OPEN_LOGIN, VIEWS.settings, VIEWS.settings)
+        })
+    }
 }
 
-// Bind the add microsoft account button.
-document.getElementById('settingsAddMicrosoftAccount').onclick = (e) => {
-    switchView(getCurrentView(), VIEWS.waiting, 500, 500, () => {
-        ipcRenderer.send(MSFT_OPCODE.OPEN_LOGIN, VIEWS.settings, VIEWS.settings)
-    })
+// Başka Craft Of Salem hesabı ekle: giriş ekranına yönlendir, dönüş ayarlar
+const settingsAddCraftOfSalemAccountEl = document.getElementById('settingsAddCraftOfSalemAccount')
+if (settingsAddCraftOfSalemAccountEl) {
+    settingsAddCraftOfSalemAccountEl.onclick = (e) => {
+        window.loginOptionsViewOnLoginSuccess = VIEWS.settings
+        window.loginOptionsViewOnLoginCancel = VIEWS.settings
+        switchView(getCurrentView(), VIEWS.loginOptions, 500, 500, () => {
+            loginOptionsCancelEnabled(false)
+        })
+    }
 }
 
 // Bind reply for Microsoft Login.
@@ -538,8 +554,8 @@ function processLogOut(val, isLastAccount){
             }
             if(isLastAccount) {
                 loginOptionsCancelEnabled(false)
-                loginOptionsViewOnLoginSuccess = VIEWS.settings
-                loginOptionsViewOnLoginCancel = VIEWS.loginOptions
+                window.loginOptionsViewOnLoginSuccess = VIEWS.settings
+                window.loginOptionsViewOnLoginCancel = VIEWS.loginOptions
                 switchView(getCurrentView(), VIEWS.loginOptions)
             }
         })
@@ -556,8 +572,8 @@ function processLogOut(val, isLastAccount){
             }
             if(isLastAccount) {
                 loginOptionsCancelEnabled(false)
-                loginOptionsViewOnLoginSuccess = VIEWS.settings
-                loginOptionsViewOnLoginCancel = VIEWS.loginOptions
+                window.loginOptionsViewOnLoginSuccess = VIEWS.settings
+                window.loginOptionsViewOnLoginCancel = VIEWS.loginOptions
                 switchView(getCurrentView(), VIEWS.loginOptions)
             }
         })
@@ -607,8 +623,8 @@ ipcRenderer.on(MSFT_OPCODE.REPLY_LOGOUT, (_, ...arguments_) => {
                 }
                 if(isLastAccount) {
                     loginOptionsCancelEnabled(false)
-                    loginOptionsViewOnLoginSuccess = VIEWS.settings
-                    loginOptionsViewOnLoginCancel = VIEWS.loginOptions
+                    window.loginOptionsViewOnLoginSuccess = VIEWS.settings
+                    window.loginOptionsViewOnLoginCancel = VIEWS.loginOptions
                     switchView(getCurrentView(), VIEWS.loginOptions)
                 }
                 if(msAccDomElementCache) {
@@ -646,6 +662,7 @@ function refreshAuthAccountSelected(uuid){
     })
 }
 
+const settingsCurrentAccounts = document.getElementById('settingsCurrentAccounts')
 const settingsCurrentMicrosoftAccounts = document.getElementById('settingsCurrentMicrosoftAccounts')
 const settingsCurrentMojangAccounts = document.getElementById('settingsCurrentMojangAccounts')
 
@@ -656,12 +673,17 @@ function populateAuthAccounts(){
     const authAccounts = ConfigManager.getAuthAccounts()
     const authKeys = Object.keys(authAccounts)
     if(authKeys.length === 0){
+        if (settingsCurrentAccounts) settingsCurrentAccounts.innerHTML = ''
+        if (settingsCurrentMicrosoftAccounts) settingsCurrentMicrosoftAccounts.innerHTML = ''
+        if (settingsCurrentMojangAccounts) settingsCurrentMojangAccounts.innerHTML = ''
         return
     }
-    const selectedUUID = ConfigManager.getSelectedAccount().uuid
+    const selectedAcc = ConfigManager.getSelectedAccount()
+    const selectedUUID = (selectedAcc && selectedAcc.uuid) ? selectedAcc.uuid : null
 
     let microsoftAuthAccountStr = ''
     let mojangAuthAccountStr = ''
+    let allAccountsStr = ''
 
     authKeys.forEach((val) => {
         const acc = authAccounts[val]
@@ -682,24 +704,25 @@ function populateAuthAccounts(){
                     </div>
                 </div>
                 <div class="settingsAuthAccountActions">
-                    <button class="settingsAuthAccountSelect" ${selectedUUID === acc.uuid ? 'selected>Selected Account &#10004;' : '>Select Account'}</button>
+                    <button class="settingsAuthAccountSelect" ${selectedUUID === acc.uuid ? 'selected>Seçili Hesap &#10004;' : '>Hesap Seç'}</button>
                     <div class="settingsAuthAccountWrapper">
-                        <button class="settingsAuthAccountLogOut">Log Out</button>
+                        <button class="settingsAuthAccountLogOut">Çıkış</button>
                     </div>
                 </div>
             </div>
         </div>`
 
+        allAccountsStr += accHtml
         if(acc.type === 'microsoft') {
             microsoftAuthAccountStr += accHtml
         } else {
             mojangAuthAccountStr += accHtml
         }
-
     })
 
-    settingsCurrentMicrosoftAccounts.innerHTML = microsoftAuthAccountStr
-    settingsCurrentMojangAccounts.innerHTML = mojangAuthAccountStr
+    if (settingsCurrentAccounts) settingsCurrentAccounts.innerHTML = allAccountsStr
+    if (settingsCurrentMicrosoftAccounts) settingsCurrentMicrosoftAccounts.innerHTML = microsoftAuthAccountStr
+    if (settingsCurrentMojangAccounts) settingsCurrentMojangAccounts.innerHTML = mojangAuthAccountStr
 }
 
 /**

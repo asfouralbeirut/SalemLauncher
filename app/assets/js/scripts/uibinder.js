@@ -102,8 +102,8 @@ function showMainUI(data){
                 $(VIEWS.landing).fadeIn(1000)
             } else {
                 loginOptionsCancelEnabled(false)
-                loginOptionsViewOnLoginSuccess = VIEWS.landing
-                loginOptionsViewOnLoginCancel = VIEWS.loginOptions
+                window.loginOptionsViewOnLoginSuccess = VIEWS.landing
+                window.loginOptionsViewOnLoginCancel = VIEWS.loginOptions
                 currentView = VIEWS.loginOptions
                 $(VIEWS.loginOptions).fadeIn(1000)
             }
@@ -377,8 +377,8 @@ async function validateSelectedAccount(){
                     validateEmail(selectedAcc.username)
                 }
                 
-                loginOptionsViewOnLoginSuccess = getCurrentView()
-                loginOptionsViewOnLoginCancel = VIEWS.loginOptions
+                window.loginOptionsViewOnLoginSuccess = getCurrentView()
+                window.loginOptionsViewOnLoginCancel = VIEWS.loginOptions
 
                 if(accLen > 0) {
                     loginOptionsViewOnCancel = getCurrentView()

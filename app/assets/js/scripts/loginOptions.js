@@ -6,8 +6,6 @@ const loginOptionsCancelButton = document.getElementById('loginOptionCancelButto
 
 let loginOptionsCancellable = false
 
-let loginOptionsViewOnLoginSuccess
-let loginOptionsViewOnLoginCancel
 let loginOptionsViewOnCancel
 let loginOptionsViewCancelHandler
 
@@ -21,8 +19,8 @@ function loginOptionsCancelEnabled(val){
 
 loginOptionCraftOfSalem.onclick = (e) => {
     switchView(getCurrentView(), VIEWS.login, 500, 500, () => {
-        loginViewOnSuccess = loginOptionsViewOnLoginSuccess
-        loginViewOnCancel = loginOptionsViewOnLoginCancel
+        loginViewOnSuccess = window.loginOptionsViewOnLoginSuccess
+        loginViewOnCancel = window.loginOptionsViewOnLoginCancel
         loginCancelEnabled(true)
     })
 }
@@ -31,16 +29,16 @@ loginOptionMicrosoft.onclick = (e) => {
     switchView(getCurrentView(), VIEWS.waiting, 500, 500, () => {
         ipcRenderer.send(
             MSFT_OPCODE.OPEN_LOGIN,
-            loginOptionsViewOnLoginSuccess,
-            loginOptionsViewOnLoginCancel
+            window.loginOptionsViewOnLoginSuccess,
+            window.loginOptionsViewOnLoginCancel
         )
     })
 }
 
 loginOptionMojang.onclick = (e) => {
     switchView(getCurrentView(), VIEWS.login, 500, 500, () => {
-        loginViewOnSuccess = loginOptionsViewOnLoginSuccess
-        loginViewOnCancel = loginOptionsViewOnLoginCancel
+        loginViewOnSuccess = window.loginOptionsViewOnLoginSuccess
+        loginViewOnCancel = window.loginOptionsViewOnLoginCancel
         loginCancelEnabled(true)
     })
 }
