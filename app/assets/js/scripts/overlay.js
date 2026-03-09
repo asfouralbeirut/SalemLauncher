@@ -1,7 +1,8 @@
 /**
  * Script for overlay.ejs
+ * Lang uibinder'da window.Lang olarak atanıyor; burada tekrar tanımlamayalım (çakışma olmasın).
  */
-const Lang = (typeof window !== 'undefined' && window.Lang && typeof window.Lang.queryJS === 'function') ? window.Lang : require('../langloader')
+var OverlayLang = (typeof window !== 'undefined' && window.Lang && typeof window.Lang.queryJS === 'function') ? window.Lang : require('../langloader')
 
 /* Overlay Wrapper Functions */
 
@@ -132,7 +133,7 @@ function toggleServerSelection(toggleState){
  * @param {string} dismiss Dismiss button text.
  */
 function setOverlayContent(title, description, acknowledge, dismiss){
-    if (dismiss == null) dismiss = (Lang.queryJS('overlay.dismiss') || 'Kapat')
+    if (dismiss == null) dismiss = (OverlayLang.queryJS('overlay.dismiss') || 'Kapat')
     document.getElementById('overlayTitle').innerHTML = title
     document.getElementById('overlayDesc').innerHTML = description
     document.getElementById('overlayAcknowledge').innerHTML = acknowledge
