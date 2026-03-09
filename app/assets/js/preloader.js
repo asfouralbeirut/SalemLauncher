@@ -16,7 +16,7 @@ logger.info('Loading..')
 ConfigManager.load()
 
 // Load Strings
-LangLoader.loadLanguage('tr_TR')
+LangLoader.loadLanguage(ConfigManager.getLanguage() || 'tr_TR')
 
 function onDistroLoad(data){
     if(data != null){

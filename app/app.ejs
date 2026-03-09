@@ -46,9 +46,15 @@
         </div>
     </div>
     <script>
-        // Load language
-        for(let key of Object.keys(Lang.query('html'))){
-            document.getElementById(key).innerHTML = Lang.query(`html.${key}`)
+        // Load language (Türkçe / dil dosyasından metinleri uygula)
+        if (window.Lang && typeof Lang.query === 'function') {
+            var htmlStrings = Lang.query('html');
+            if (htmlStrings && typeof htmlStrings === 'object') {
+                for (var key in htmlStrings) {
+                    var el = document.getElementById(key);
+                    if (el && htmlStrings[key]) el.innerHTML = htmlStrings[key];
+                }
+            }
         }
     </script>
 </body>

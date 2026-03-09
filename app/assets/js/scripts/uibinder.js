@@ -10,6 +10,12 @@ const ConfigManager = require('./assets/js/configmanager')
 const DistroManager = require('./assets/js/distromanager')
 const Lang          = require('./assets/js/langloader')
 
+// Dil: config yüklü değilse veya hata olursa varsayılan Türkçe. Renderer'da mutlaka yükle.
+let langId = 'tr_TR'
+try {
+    if (ConfigManager && typeof ConfigManager.getLanguage === 'function') langId = ConfigManager.getLanguage() || 'tr_TR'
+} catch (e) { /* config henüz yoksa tr_TR kullan */ }
+Lang.loadLanguage(langId)
 window.Lang = Lang
 
 let rscShouldLoad = false

@@ -1330,6 +1330,20 @@ body, button {
     color: rgba(255, 255, 255, .95);
     margin-top: 5px;
 }
+.settingsSelectNative {
+    min-width: 140px;
+    padding: 6px 10px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.95);
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 4px;
+    cursor: pointer;
+}
+.settingsSelectNative:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.6);
+}
 .settingsDivider {
     height: 1px;
     width: 75%;

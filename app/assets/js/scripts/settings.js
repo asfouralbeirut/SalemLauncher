@@ -150,6 +150,9 @@ function initSettingsValues(){
                 } else if(v.type === 'checkbox'){
                     v.checked = gFn.apply(null, gFnOpts)
                 }
+            } else if(v.tagName === 'SELECT'){
+                const val = gFn.apply(null, gFnOpts)
+                if(val != null) v.value = val
             } else if(v.tagName === 'DIV'){
                 if(v.classList.contains('rangeSlider')){
                     // Special Conditions
@@ -208,6 +211,12 @@ function saveSettingsValues(){
                     if(cVal === 'AllowPrerelease'){
                         changeAllowPrerelease(v.checked)
                     }
+                }
+            } else if(v.tagName === 'SELECT'){
+                sFnOpts.push(v.value)
+                sFn.apply(null, sFnOpts)
+                if(cVal === 'Language'){
+                    remote.getCurrentWindow().reload()
                 }
             } else if(v.tagName === 'DIV'){
                 if(v.classList.contains('rangeSlider')){

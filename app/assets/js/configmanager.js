@@ -102,7 +102,8 @@ const DEFAULT_CONFIG = {
         },
         launcher: {
             allowPrerelease: false,
-            dataDirectory: dataPath
+            dataDirectory: dataPath,
+            language: 'tr_TR'
         }
     },
     newsCache: {
@@ -825,4 +826,25 @@ exports.getAllowPrerelease = function(def = false){
  */
 exports.setAllowPrerelease = function(allowPrerelease){
     config.settings.launcher.allowPrerelease = allowPrerelease
+}
+
+/**
+ * Get the launcher UI language code.
+ *
+ * @param {boolean} def Optional. If true, the default value will be returned.
+ * @returns {string} Language code (e.g. 'tr_TR', 'en_US').
+ */
+exports.getLanguage = function(def = false){
+    if (def) return DEFAULT_CONFIG.settings.launcher.language
+    if (!config || !config.settings || !config.settings.launcher) return DEFAULT_CONFIG.settings.launcher.language
+    return config.settings.launcher.language || DEFAULT_CONFIG.settings.launcher.language
+}
+
+/**
+ * Set the launcher UI language code. Takes effect after restart.
+ *
+ * @param {string} language Language code (e.g. 'tr_TR', 'en_US').
+ */
+exports.setLanguage = function(language){
+    config.settings.launcher.language = language
 }
