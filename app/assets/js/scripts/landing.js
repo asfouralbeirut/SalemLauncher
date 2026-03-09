@@ -229,9 +229,8 @@ const refreshServerStatus = async function(fade = false){
 
     try {
         const serverURL = new URL('my://' + serv.getAddress())
-
-        const servStat = await getServerStatus(47, serverURL.hostname, Number(serverURL.port))
-        console.log(servStat)
+        const port = Number(serverURL.port) || 25565
+        const servStat = await getServerStatus(47, serverURL.hostname, port)
         pLabel = 'PLAYERS'
         pVal = servStat.players.online + '/' + servStat.players.max
 
@@ -328,7 +327,7 @@ function asyncSystemScan(mcVersion, launchAfter = true){
                 // Show this information to the user.
                 setOverlayContent(
                     'No Compatible<br>Java Installation Found',
-                    `In order to join WesterosCraft, you need a 64-bit installation of Java ${javaVer}. Would you like us to install a copy?`,
+                    `In order to join Craft Of Salem, you need a 64-bit installation of Java ${javaVer}. Would you like us to install a copy?`,
                     'Install Java',
                     'Install Manually'
                 )
@@ -343,7 +342,7 @@ function asyncSystemScan(mcVersion, launchAfter = true){
                         //$('#overlayDismiss').toggle(false)
                         setOverlayContent(
                             'Java is Required<br>to Launch',
-                            `A valid x64 installation of Java ${javaVer} is required to launch.<br><br>Please refer to our <a href="https://github.com/dscalzi/HeliosLauncher/wiki/Java-Management#manually-installing-a-valid-version-of-java">Java Management Guide</a> for instructions on how to manually install Java.`,
+                            `A valid x64 installation of Java ${javaVer} is required to launch.<br><br>Please refer to our <a href="https://github.com/craftofsalem/SalemLauncher/wiki/Java-Management">Java Management Guide</a> for instructions on how to manually install Java.`,
                             'I Understand',
                             'Go Back'
                         )
@@ -389,7 +388,7 @@ function asyncSystemScan(mcVersion, launchAfter = true){
                 // User will have to follow the guide to install Java.
                 setOverlayContent(
                     'Unexpected Issue:<br>Java Download Failed',
-                    'Unfortunately we\'ve encountered an issue while attempting to install Java. You will need to manually install a copy. Please check out our <a href="https://github.com/dscalzi/HeliosLauncher/wiki">Troubleshooting Guide</a> for more details and instructions.',
+                    'Unfortunately we\'ve encountered an issue while attempting to install Java. You will need to manually install a copy. Please check out our <a href="https://github.com/craftofsalem/SalemLauncher/wiki">Troubleshooting Guide</a> for more details and instructions.',
                     'I Understand'
                 )
                 setOverlayHandler(() => {
@@ -687,7 +686,7 @@ function dlAsync(login = true){
                     if(SERVER_JOINED_REGEX.test(data)){
                         DiscordWrapper.updateDetails('Exploring the Realm!')
                     } else if(GAME_JOINED_REGEX.test(data)){
-                        DiscordWrapper.updateDetails('Sailing to Westeros!')
+                        DiscordWrapper.updateDetails('Craft Of Salem sunucusunda oynuyor!')
                     }
                 }
 
@@ -1093,7 +1092,17 @@ function loadNews(){
     return new Promise((resolve, reject) => {
         const distroData = DistroManager.getDistribution()
         const newsFeed = distroData.getRSS()
-        const newsHost = new URL(newsFeed).origin + '/'
+        if(!newsFeed || typeof newsFeed !== 'string' || newsFeed.trim() === ''){
+            resolve({ articles: null })
+            return
+        }
+        let newsHost
+        try {
+            newsHost = new URL(newsFeed).origin + '/'
+        } catch(e) {
+            resolve({ articles: null })
+            return
+        }
         $.ajax({
             url: newsFeed,
             success: (data) => {

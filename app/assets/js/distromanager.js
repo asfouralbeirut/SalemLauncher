@@ -547,11 +547,13 @@ exports.pullRemote = function(){
         return exports.pullLocal()
     }
     return new Promise((resolve, reject) => {
-        const distroURL = 'http://mc.westeroscraft.com/WesterosCraftLauncher/distribution.json'
-        //const distroURL = 'https://gist.githubusercontent.com/dscalzi/53b1ba7a11d26a5c353f9d5ae484b71b/raw/'
+        // Craft Of Salem – distribution.json GitHub'da (raw URL). Dal veya dosya yolu farklıysa burayı güncelleyin.
+        const distroURL = 'https://raw.githubusercontent.com/craftofsalem/SalemLauncher/main/distribution.json'
         const opts = {
             url: distroURL,
-            timeout: 2500
+            timeout: 2500,
+            // SSL sertifikası süresi dolmuş sunucular için (sadece geçici!): ortam değişkeni SALEM_LAUNCHER_INSECURE_DISTRO=1
+            strictSSL: process.env.SALEM_LAUNCHER_INSECURE_DISTRO !== '1'
         }
         const distroDest = path.join(ConfigManager.getLauncherDirectory(), 'distribution.json')
         request(opts, (error, resp, body) => {

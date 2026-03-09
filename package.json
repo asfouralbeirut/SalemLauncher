@@ -1,13 +1,13 @@
 {
-  "name": "helioslauncher",
+  "name": "salemlauncher",
   "version": "1.10.0",
-  "productName": "Helios Launcher",
-  "description": "Modded Minecraft Launcher",
-  "author": "Daniel Scalzi (https://github.com/dscalzi/)",
+  "productName": "Salem Launcher",
+  "description": "Craft Of Salem sunucusu için Salem Launcher",
+  "author": "Craft Of Salem",
   "license": "UNLICENSED",
-  "homepage": "https://github.com/dscalzi/HeliosLauncher",
+  "homepage": "https://craftofsalem.com",
   "bugs": {
-    "url": "https://github.com/dscalzi/HeliosLauncher/issues"
+    "url": "https://github.com/craftofsalem/SalemLauncher/issues"
   },
   "private": true,
   "main": "index.js",
@@ -49,6 +49,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dscalzi/HeliosLauncher.git"
+    "url": "git+https://github.com/craftofsalem/SalemLauncher.git"
   }
 }
