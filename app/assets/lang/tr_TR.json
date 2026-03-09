@@ -1,0 +1,49 @@
+{
+    "html": {
+        "avatarOverlay": "Düzenle"
+    },
+    "js": {
+        "login": {
+            "error": {
+                "invalidValue": "* Geçersiz değer",
+                "requiredValue": "* Zorunlu",
+                "userMigrated": {
+                    "title": "Giriş Hatası:<br>Geçersiz Kimlik Bilgileri",
+                    "desc": "Taşınmış bir hesapla giriş yapmaya çalıştınız. Kullanıcı adı olarak hesap e-postasını kullanarak tekrar deneyin."
+                },
+                "invalidCredentials": {
+                    "title": "Giriş Hatası:<br>Geçersiz Kimlik Bilgileri",
+                    "desc": "Girdiğiniz e-posta veya şifre hatalı. Lütfen tekrar deneyin."
+                },
+                "rateLimit": {
+                    "title": "Giriş Hatası:<br>Çok Fazla Deneme",
+                    "desc": "Bu hesapla son zamanlarda çok fazla giriş denemesi yapıldı. Lütfen daha sonra tekrar deneyin."
+                },
+                "noInternet": {
+                    "title": "Giriş Hatası:<br>İnternet Bağlantısı Yok",
+                    "desc": "Giriş yapmak için internete bağlı olmanız gerekir. Lütfen bağlanıp tekrar deneyin."
+                },
+                "authDown": {
+                    "title": "Giriş Hatası:<br>Kimlik Doğrulama Sunucusu Çevrimdışı",
+                    "desc": "Mojang kimlik doğrulama sunucusu şu an çevrimdışı veya ulaşılamıyor. Lütfen biraz bekleyip tekrar deneyin. Sunucu durumunu <a href=\"https://help.mojang.com/\">Mojang yardım portalinde</a> kontrol edebilirsiniz."
+                },
+                "notPaid": {
+                    "title": "Giriş Hatası:<br>Oyun Satın Alınmamış",
+                    "desc": "Giriş yapmaya çalıştığınız hesap Minecraft'ın bir kopyasını satın almamış.<br><a href=\"https://minecraft.net/\">Minecraft.net</a> adresinden satın alabilirsiniz."
+                },
+                "unknown": {
+                    "title": "Giriş Hatası:<br>Bilinmeyen Hata"
+                }
+            },
+            "login": "GİRİŞ",
+            "loggingIn": "GİRİŞ YAPILIYOR",
+            "success": "BAŞARILI",
+            "tryAgain": "Tekrar Dene"
+        },
+        "landing": {
+            "launch": {
+                "pleaseWait": "Lütfen bekleyin.."
+            }
+        }
+    }
+}

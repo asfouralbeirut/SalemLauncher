@@ -1,20 +1,20 @@
-# Craft Of Salem – Launcher giriş API
+# Craft Of Salem – Launcher Giriş API
 
-Crackli (offline) sunucu için giriş, **Mojang/Microsoft yerine** Craft Of Salem sitesi üzerinden doğrulanır. Launcher, giriş bilgilerini `launcher_login.php` endpoint'ine gönderir.
+Crackli (çevrimdışı) sunucu için giriş, **Mojang/Microsoft yerine** Craft Of Salem sitesi üzerinden doğrulanır. Launcher, giriş bilgilerini `launcher_login.php` uç noktasına gönderir.
 
-## Endpoint
+## Uç Nokta
 
 **Site dosyası:** `launcher_login.php` (site kökünde)  
-**Tam URL:** `https://craftofsalem.com/launcher_login.php`
+**Tam adres:** `https://craftofsalem.com/launcher_login.php`
 
-Launcher tarafında URL şu dosyada tanımlıdır:  
+Launcher tarafında adres şu dosyada tanımlıdır:  
 `SalemLauncher/app/assets/js/craftofsalem-auth.js` → `CRAFT_OF_SALEM_LOGIN_URL`
 
 ## İstek
 
-- **Method:** `POST`
-- **Content-Type:** `application/json`
-- **Body:**
+- **Yöntem:** `POST`
+- **İçerik türü:** `application/json`
+- **Gövde:**
   ```json
   {
     "username": "oyuncu_adi",
@@ -27,7 +27,7 @@ Launcher tarafında URL şu dosyada tanımlıdır:
 ### Başarılı giriş
 
 - **HTTP:** `200`
-- **Body:**
+- **Gövde:**
   ```json
   {
     "success": true,
@@ -36,11 +36,11 @@ Launcher tarafında URL şu dosyada tanımlıdır:
   }
   ```
   - `username`: Oyunda gösterilecek isim (`Users.game_name` veya `Users.username`).
-  - `uuid`: İsteğe bağlı. Veritabanında `Users.uuid` varsa launcher bunu kullanır; yoksa offline UUID üretir.
+  - `uuid`: İsteğe bağlı. Veritabanında `Users.uuid` varsa launcher bunu kullanır; yoksa çevrimdışı UUID üretir.
 
 ### Hatalı giriş
 
-- **HTTP:** `400` / `401` / `403` / `500`, **veya** body:
+- **HTTP:** `400` / `401` / `403` / `500`, **veya** gövde:
   ```json
   {
     "success": false,
@@ -62,6 +62,6 @@ Bu yapı sitedeki **giris-yap.php** ve **themes/default/helper.php** (`checkSHA2
 
 ## Launcher tarafı
 
-- Giriş başarılı olunca launcher, API'den gelen **uuid** varsa onu kullanır, yoksa **offline UUID** üretir (`OfflinePlayer:<username>` MD5).
-- Şifre launcherda saklanmaz; sadece oturum (displayName, uuid) config’te tutulur.
-- Çıkışta sadece launcher config’ten silinir, sunucuya istek atılmaz.
+- Giriş başarılı olunca launcher, API'den gelen **uuid** varsa onu kullanır, yoksa **çevrimdışı UUID** üretir (`OfflinePlayer:<username>` MD5).
+- Şifre launcherda saklanmaz; yalnızca oturum bilgisi (görünen ad, uuid) yapılandırma dosyasında tutulur.
+- Çıkışta yalnızca launcher yapılandırmasından silinir, sunucuya istek gönderilmez.
