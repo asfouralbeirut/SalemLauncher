@@ -2,7 +2,7 @@
  * Script for overlay.ejs
  * Lang uibinder'da window.Lang olarak atanıyor; burada tekrar tanımlamayalım (çakışma olmasın).
  */
-var OverlayLang = (typeof window !== 'undefined' && window.Lang && typeof window.Lang.queryJS === 'function') ? window.Lang : require('../langloader')
+var OverlayLang = (typeof window !== 'undefined' && window.Lang && typeof window.Lang.queryJS === 'function') ? window.Lang : require('./assets/js/langloader')
 
 /* Overlay Wrapper Functions */
 

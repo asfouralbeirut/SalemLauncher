@@ -134,6 +134,7 @@ class Module {
         switch (type) {
             case exports.Types.Library:
             case exports.Types.ForgeHosted:
+            case exports.Types.FabricHosted:
             case exports.Types.LiteLoader:
             case exports.Types.ForgeMod:
                 return 'jar'
@@ -183,6 +184,7 @@ class Module {
         switch (this.type){
             case exports.Types.Library:
             case exports.Types.ForgeHosted:
+            case exports.Types.FabricHosted:
             case exports.Types.LiteLoader:
                 this.artifact.path = path.join(ConfigManager.getCommonDirectory(), 'libraries', pth)
                 break
@@ -191,6 +193,7 @@ class Module {
                 this.artifact.path = path.join(ConfigManager.getCommonDirectory(), 'modstore', pth)
                 break
             case exports.Types.VersionManifest:
+            case exports.Types.FabricVersionManifest:
                 this.artifact.path = path.join(ConfigManager.getCommonDirectory(), 'versions', this.getIdentifier(), `${this.getIdentifier()}.json`)
                 break
             case exports.Types.File:
@@ -525,6 +528,8 @@ exports.Types = {
     Library: 'Library',
     ForgeHosted: 'ForgeHosted',
     Forge: 'Forge', // Unimplemented
+    FabricHosted: 'FabricHosted',
+    FabricVersionManifest: 'FabricVersionManifest',
     LiteLoader: 'LiteLoader',
     ForgeMod: 'ForgeMod',
     LiteMod: 'LiteMod',
@@ -601,36 +606,52 @@ exports.pullRemote = function(){
 exports.pullLocal = function(){
     return new Promise((resolve, reject) => {
         const filePath = DEV_MODE ? DEV_PATH : DISTRO_PATH
+        const defaultPath = path.join(__dirname, '..', 'distribution.default.json')
+
+        function tryLoadDefault() {
+            fs.readFile(defaultPath, 'utf-8', (err2, defaultBody) => {
+                if (!err2 && defaultBody) {
+                    try {
+                        data = DistroIndex.fromJSON(JSON.parse(defaultBody.replace(/^\uFEFF/, '').trim()))
+                        if (!DEV_MODE) {
+                            try {
+                                fs.mkdirSync(path.dirname(DISTRO_PATH), { recursive: true })
+                                fs.writeFileSync(DISTRO_PATH, defaultBody, 'utf-8')
+                            } catch (writeErr) {}
+                        }
+                        resolve(data)
+                    } catch (e) {
+                        reject(e)
+                    }
+                } else {
+                    reject(err2 || new Error('No default distribution'))
+                }
+            })
+        }
+
         fs.readFile(filePath, 'utf-8', (err, d) => {
             if (!err) {
                 try {
                     const cleaned = (d && typeof d === 'string') ? d.replace(/^\uFEFF/, '').trim() : d
                     data = DistroIndex.fromJSON(JSON.parse(cleaned))
+                    const servers = data.getServers()
+                    const hasLoader = servers && servers.some(serv => {
+                        const mods = serv.getModules()
+                        return mods && mods.some(m => m.getType() === exports.Types.ForgeHosted || m.getType() === exports.Types.FabricHosted)
+                    })
+                    if (!hasLoader && !DEV_MODE) {
+                        logger.info('Local distribution has no Forge/Fabric module, using embedded default.')
+                        tryLoadDefault()
+                        return
+                    }
                     resolve(data)
                 } catch (parseErr) {
                     reject(parseErr)
                 }
                 return
             }
-            // Yerel dosya yoksa projede gömülü varsayılan dağıtımı kullan
             if (err.code === 'ENOENT' && !DEV_MODE) {
-                const defaultPath = path.join(__dirname, '..', 'distribution.default.json')
-                fs.readFile(defaultPath, 'utf-8', (err2, defaultBody) => {
-                    if (!err2 && defaultBody) {
-                        try {
-                            data = DistroIndex.fromJSON(JSON.parse(defaultBody.replace(/^\uFEFF/, '').trim()))
-                            try {
-                                fs.mkdirSync(path.dirname(DISTRO_PATH), { recursive: true })
-                                fs.writeFileSync(DISTRO_PATH, defaultBody, 'utf-8')
-                            } catch (writeErr) {}
-                            resolve(data)
-                        } catch (e) {
-                            reject(e)
-                        }
-                    } else {
-                        reject(err)
-                    }
-                })
+                tryLoadDefault()
                 return
             }
             reject(err)

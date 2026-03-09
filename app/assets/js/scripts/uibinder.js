@@ -8,10 +8,10 @@ const path          = require('path')
 const AuthManager   = require('./assets/js/authmanager')
 const ConfigManager = require('./assets/js/configmanager')
 const DistroManager = require('./assets/js/distromanager')
-// Dil: sayfa tarafında her zaman langloader ile yükle (scripts klasöründen doğru yol ../langloader)
+// Dil: sayfa tarafında her zaman langloader ile yükle (require app köküne göre çözülür)
 let Lang
 try {
-    Lang = require('../langloader')
+    Lang = require('./assets/js/langloader')
     var langId = 'tr_TR'
     try { if (ConfigManager && typeof ConfigManager.getLanguage === 'function') langId = ConfigManager.getLanguage() || 'tr_TR' } catch (e) {}
     Lang.loadLanguage(langId)

@@ -9,10 +9,31 @@
             "icon": "https://craftofsalem.com/favicon.ico",
             "version": "1",
             "address": "oyna.craftofsalem.com",
-            "minecraftVersion": "1.21.11",
+            "minecraftVersion": "1.21.1",
             "mainServer": true,
             "autoconnect": true,
-            "modules": []
+            "modules": [
+                {
+                    "id": "net.fabricmc:fabric-loader:0.16.5",
+                    "name": "Fabric Loader",
+                    "type": "FabricHosted",
+                    "artifact": {
+                        "size": 1369712,
+                        "url": "https://maven.fabricmc.net/net/fabricmc/fabric-loader/0.16.5/fabric-loader-0.16.5.jar"
+                    },
+                    "subModules": [
+                        {
+                            "id": "fabric-1.21.1-0.16.5",
+                            "name": "Fabric 1.21.1 profile",
+                            "type": "FabricVersionManifest",
+                            "artifact": {
+                                "size": 0,
+                                "url": "https://meta.fabricmc.net/v2/versions/loader/1.21.1/0.16.5/profile/json"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }
