@@ -8,17 +8,23 @@ const path          = require('path')
 const AuthManager   = require('./assets/js/authmanager')
 const ConfigManager = require('./assets/js/configmanager')
 const DistroManager = require('./assets/js/distromanager')
-// Preload zaten window.Lang ile dili yükledi; onu kullan
+// Preload zaten window.Lang ile dili yükledi; onu kullan. Yoksa veya hata olursa langloader'dan yükle.
 let Lang
-if (typeof window !== 'undefined' && window.Lang && typeof window.Lang.query === 'function') {
-    Lang = window.Lang
-} else {
-    Lang = require('./assets/js/langloader')
-    let langId = 'tr_TR'
-    try { if (ConfigManager && typeof ConfigManager.getLanguage === 'function') langId = ConfigManager.getLanguage() || 'tr_TR' } catch (e) {}
-    Lang.loadLanguage(langId)
+try {
+    if (typeof window !== 'undefined' && window.Lang && typeof window.Lang.query === 'function') {
+        Lang = window.Lang
+    } else {
+        Lang = require('./assets/js/langloader')
+        var langId = 'tr_TR'
+        try { if (ConfigManager && typeof ConfigManager.getLanguage === 'function') langId = ConfigManager.getLanguage() || 'tr_TR' } catch (e) {}
+        Lang.loadLanguage(langId)
+    }
+    window.Lang = Lang
+} catch (e) {
+    console.warn('Lang init failed', e)
+    Lang = { query: function () { return {} }, queryJS: function () { return {} } }
+    window.Lang = Lang
 }
-window.Lang = Lang
 
 let rscShouldLoad = false
 let fatalStartupError = false

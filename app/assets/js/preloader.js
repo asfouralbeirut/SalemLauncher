@@ -15,13 +15,19 @@ logger.info('Loading..')
 // Load ConfigManager
 ConfigManager.load()
 
-// Dil: config'ten oku, varsayılan Türkçe. Sayfa bu Lang'i kullanacak.
-const langId = ConfigManager.getLanguage() || 'tr_TR'
-LangLoader.loadLanguage(langId)
-window.Lang = {
-    query: LangLoader.query.bind(LangLoader),
-    queryJS: LangLoader.queryJS.bind(LangLoader),
-    loadLanguage: LangLoader.loadLanguage.bind(LangLoader)
+// Dil: config'ten oku, varsayılan Türkçe. Sayfa bu Lang'i kullanacak (hata olursa atlama).
+try {
+    const langId = ConfigManager.getLanguage() || 'tr_TR'
+    LangLoader.loadLanguage(langId)
+    if (typeof window !== 'undefined') {
+        window.Lang = {
+            query: function (id) { return LangLoader.query(id) },
+            queryJS: function (id) { return LangLoader.queryJS(id) },
+            loadLanguage: function (id) { return LangLoader.loadLanguage(id) }
+        }
+    }
+} catch (e) {
+    logger.warn('Lang preload failed', e)
 }
 
 function onDistroLoad(data){
