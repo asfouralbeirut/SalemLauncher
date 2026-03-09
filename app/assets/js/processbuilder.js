@@ -522,12 +522,16 @@ class ProcessBuilder {
 
         // Autoconnect
         let isAutoconnectBroken
-        try {
-            isAutoconnectBroken = Util.isAutoconnectBroken(this.forgeData.id.split('-')[2])
-        } catch(err) {
-            logger.error(err)
-            logger.error('Forge version format changed.. assuming autoconnect works.')
-            logger.debug('Forge version:', this.forgeData.id)
+        if (this.forgeData.loaderType === 'fabric') {
+            isAutoconnectBroken = false
+        } else {
+            try {
+                isAutoconnectBroken = Util.isAutoconnectBroken(this.forgeData.id.split('-')[2])
+            } catch(err) {
+                logger.error(err)
+                logger.error('Forge version format changed.. assuming autoconnect works.')
+                logger.debug('Forge version:', this.forgeData.id)
+            }
         }
 
         if(isAutoconnectBroken) {
@@ -686,6 +690,13 @@ class ProcessBuilder {
         // Resolve the server declared libraries.
         const servLibs = this._resolveServerLibraries(mods)
 
+        // Fabric: add profile libraries from loader data (asm, intermediary, sponge-mixin, etc.)
+        if (this.forgeData && this.forgeData.loaderType === 'fabric' && this.forgeData.libraries && this.forgeData.libraries.length) {
+            this.forgeData.libraries.forEach((p, i) => {
+                servLibs['fabric_lib_' + i] = p
+            })
+        }
+
         // Merge libraries, server libs with the same
         // maven identifier will override the mojang ones.
         // Ex. 1.7.10 forge overrides mojang's guava with newer version.
@@ -829,10 +840,10 @@ class ProcessBuilder {
         const mdls = this.server.getModules()
         let libs = {}
 
-        // Locate Forge/Libraries
+        // Locate Forge/Fabric/Libraries
         for(let mdl of mdls){
             const type = mdl.getType()
-            if(type === DistroManager.Types.ForgeHosted || type === DistroManager.Types.Library){
+            if(type === DistroManager.Types.ForgeHosted || type === DistroManager.Types.FabricHosted || type === DistroManager.Types.Library){
                 libs[mdl.getVersionlessID()] = mdl.getArtifact().getPath()
                 if(mdl.hasSubModules()){
                     const res = this._resolveModuleLibraries(mdl)
